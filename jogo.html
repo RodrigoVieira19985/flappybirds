@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo</title>
+    <style>
+        body{
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            touch-action: manipulation;
+        }
+        main{
+            width: 700px;
+            height: 400px;
+            
+            position: relative;
+            overflow: hidden;
+        }
+        #fundo{
+            width: 700px;
+            height: 100%;
+            background-image: url(fundo.jpg);
+            background-size: cover;
+        }
+        #placar{
+            width: 100px;
+            height: 50px;
+            border: solid rgb(105, 128, 0) 3px;
+            background-color: white;
+            color: rgb(112, 138, 0);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            z-index: 10;
+            top: 10px;
+            left: 40%;
+            font-size: 36px;
+        }
+        #personagem{
+            width: 50px;
+            height: 50px;
+            background-image: url(voando.png);
+            background-size: contain;
+            background-repeat: no-repeat;
+            position: absolute;
+            top: 150px;
+            left: 30px;
+        }
+        .obstaculo{
+            width: 80px;
+            height: 300px;
+            background-image: url(cano.png);
+            position: absolute;
+            background-size: cover;
+        }
+        .obstaculo2{
+            width: 80px;
+            height: 320px;
+            background-image: url(cano2.png);
+            position: absolute;
+            background-size: cover;
+        }
+    @media (max-width: 1000px) {
+        *{
+            margin: 0px;
+            padding: 0px;
+        }
+        body{
+            display: block;
+        }
+        main{
+            width: 100%;
+            height: 100%;
+        }
+    }
+    </style>
+</head>
+<body>
+    <main id="jogo">
+        <div id="personagem"></div>
+        <div id="fundo"></div>
+        <div id="placar">0</div>
+    </main>
+</body>
+<script>
+    var placar = document.getElementById("placar")
+    var personagem = document.getElementById("personagem")
+    var jogo = document.getElementById("jogo")
+    var quantidadeDeObstaculos = 0, quantidadeDeObstaculos2 = 0
+    var posVertical = 150, cont = 0, apertou = false, i, j, iniciou = false, pontos = 0
+    var intervaloSubir, intervaloCair, posHorizontalObstaculo, numeroAleatorio, intervaloPontuacao
+
+    document.addEventListener("keydown", function(u){
+        console.log("entrou")
+        if(u.key=="w" || u.key=="W"){
+            console.log("Clicou!")
+            if(apertou == false){
+                clearInterval(intervaloCair)
+                intervaloSubir = setInterval(subir, 10)
+            }
+            cont = 0
+            apertou = true
+            if(iniciou == false){
+                criarObstaculo()
+                intervaloAndarObstaculo = setInterval(andarObstaculo,10)
+                setInterval(criarObstaculo, 3000)
+                setInterval(colisao,1)
+                intervaloPontuacao = setInterval(pontuacao,1)
+                iniciou = true
+            }
+        }
+    })
+
+    document.addEventListener("click", function(e){
+        console.log("entrou")
+        console.log("Clicou!")
+        if(apertou == false){
+            clearInterval(intervaloCair)
+            intervaloSubir = setInterval(subir, 10)
+        }
+        cont = 0
+        apertou = true
+        if(iniciou == false){
+            criarObstaculo()
+            intervaloAndarObstaculo = setInterval(andarObstaculo,10)
+            setInterval(criarObstaculo, 3000)
+            setInterval(colisao,1)
+            intervaloPontuacao = setInterval(pontuacao,1)
+            iniciou = true
+        }
+    })
+
+    function subir(){
+        if(posVertical>350){
+            console.log("Colisãochao")
+        }else if(posVertical<=0){
+            clearInterval(intervaloSubir)
+            intervaloCair = setInterval(cair, 10)
+        }else{
+            posVertical--
+            personagem.style.top = posVertical + "px"
+        }
+        if(cont == 25){
+            clearInterval(intervaloSubir)
+            intervaloCair = setInterval(cair, 10)
+        }
+        cont++
+    }
+
+    function cair(){
+        apertou = false
+        if(posVertical>350){
+            console.log("Colisãochao")
+            console.log("Colisãocano")
+            clearInterval(intervaloSubir)
+            clearInterval(intervaloCair)
+            clearInterval(intervaloAndarObstaculo)
+            clearInterval(intervaloPontuacao)
+            personagem.style.backgroundImage = 'url(caiu.png)'
+        }else{
+            posVertical++
+            personagem.style.top = posVertical + "px"
+        }
+    }
+
+    function andarObstaculo(){
+        for(i=0; i<quantidadeDeObstaculos; i++){
+            var obstaculos = document.getElementsByClassName("obstaculo")
+            var estiloObstaculo = window.getComputedStyle(obstaculos[i])
+            posHorizontalObstaculo = parseInt(estiloObstaculo.left)
+            posHorizontalObstaculo --
+            obstaculos[i].style.left = posHorizontalObstaculo + "px"
+        }
+
+        for(i=0; i<quantidadeDeObstaculos2; i++){
+            var obstaculos2 = document.getElementsByClassName("obstaculo2")
+            var estiloObstaculo2 = window.getComputedStyle(obstaculos2[i])
+            posHorizontalObstaculo = parseInt(estiloObstaculo2.left)
+            posHorizontalObstaculo --
+            obstaculos2[i].style.left = posHorizontalObstaculo + "px"
+        }
+    }
+
+    function colisao(){
+        for(j=0; j<quantidadeDeObstaculos; j++){
+            var obstaculos = document.getElementsByClassName("obstaculo")
+            var estiloObstaculo = window.getComputedStyle(obstaculos[j])
+            posHorizontalObstaculo = parseInt(estiloObstaculo.left)
+            alturaObstaculo = parseInt(estiloObstaculo.top)
+            if((posHorizontalObstaculo < 80 && posHorizontalObstaculo > -22) && (posVertical + 50 > alturaObstaculo)){
+                console.log("Colisãocano")
+                clearInterval(intervaloSubir)
+                clearInterval(intervaloCair)
+                clearInterval(intervaloAndarObstaculo)
+                clearInterval(intervaloPontuacao)
+                personagem.style.backgroundImage = 'url(caiu.png)'
+            }
+            if(posHorizontalObstaculo < -75){
+                jogo.removeChild(obstaculos[j])
+                quantidadeDeObstaculos--
+            }
+        }
+
+        for(j=0; j<quantidadeDeObstaculos2; j++){
+            var obstaculos2 = document.getElementsByClassName("obstaculo2")
+            var estiloObstaculo2 = window.getComputedStyle(obstaculos2[j])
+            posHorizontalObstaculo = parseInt(estiloObstaculo2.left)
+            alturaObstaculo = parseInt(estiloObstaculo2.top)
+            console.log(alturaObstaculo)
+            if((posHorizontalObstaculo < 80 && posHorizontalObstaculo > -22) && (posVertical < alturaObstaculo  + 320)){
+                console.log("Colisãocano")
+                clearInterval(intervaloSubir)
+                clearInterval(intervaloCair)
+                clearInterval(intervaloAndarObstaculo)
+                clearInterval(intervaloPontuacao)
+                personagem.style.backgroundImage = 'url(caiu.png)'
+            }
+            if(posHorizontalObstaculo < -75){
+                jogo.removeChild(obstaculos2[j])
+                quantidadeDeObstaculos2--
+            }
+        }
+        
+    }
+
+    function pontuacao(){
+        console.log("entrou")
+        pontos+=0.01
+        placar.innerHTML = parseInt(pontos)
+    }
+                
+
+    function criarObstaculo(){
+        var tipoCano = Math.floor(Math.random() * (3 - 1 + 1)) + 1
+        var novoObstaculo = document.createElement("div")
+        if(tipoCano == 1){
+            novoObstaculo.setAttribute("class","obstaculo")
+            numeroAleatorio = Math.floor(Math.random() * (350 - 150 + 1)) + 150
+            quantidadeDeObstaculos++
+        }
+        if(tipoCano == 2){
+            novoObstaculo.setAttribute("class","obstaculo2")
+            numeroAleatorio = Math.floor(Math.random() * ((-100) - (-250) + 1)) + (-250)
+            quantidadeDeObstaculos2++
+        }
+        if(tipoCano == 3){
+            var novoObstaculo2 = document.createElement("div")
+            novoObstaculo2.setAttribute("class","obstaculo")
+            numeroAleatorio = Math.floor(Math.random() * (300 - 150 + 1)) + 150
+            novoObstaculo2.style.top = numeroAleatorio + "px"
+            novoObstaculo2.style.left = "700px"
+            jogo.appendChild(novoObstaculo2)
+            quantidadeDeObstaculos++
+            novoObstaculo.setAttribute("class","obstaculo2")
+            numeroAleatorio = numeroAleatorio - 450
+            quantidadeDeObstaculos2++
+        }
+        novoObstaculo.style.top = numeroAleatorio + "px"
+        novoObstaculo.style.left = "700px"
+        jogo.appendChild(novoObstaculo)
+    }
+
+</script>
+</html>
